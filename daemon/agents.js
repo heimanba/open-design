@@ -6,6 +6,13 @@ import path from 'node:path';
 
 const execFileP = promisify(execFile);
 
+// Capability flags detected at probe time (per agent id). buildArgs consults
+// this map so we only pass flags the installed CLI actually advertises in
+// `--help`. Falls back to "off" when probing failed or hasn't run yet — that
+// keeps the spawn safe across older Claude Code releases that pre-date a
+// given flag (e.g. `--include-partial-messages`, added in 1.0.86).
+const agentCapabilities = new Map();
+
 // Per-agent model picker.
 //
 //   - `listModels`         : optional spec for fetching the model list from
@@ -75,6 +82,13 @@ export const AGENT_DEFS = [
     name: 'Claude Code',
     bin: 'claude',
     versionArgs: ['--version'],
+    helpArgs: ['--help'],
+    capabilityFlags: {
+      // Flag string -> capability key. After probing `--help`, we set
+      // `agentCapabilities[id][key] = true` for each substring that matches.
+      '--include-partial-messages': 'partialMessages',
+      '--add-dir': 'addDir',
+    },
     // `claude` has no list-models subcommand; the CLI accepts both short
     // aliases (sonnet/opus/haiku) and the full ids, so we ship both as
     // hints. Users who want a non-shipped model can paste it via the
@@ -89,21 +103,29 @@ export const AGENT_DEFS = [
       { id: 'claude-haiku-4-5', label: 'claude-haiku-4-5' },
     ],
     buildArgs: (prompt, _imagePaths, extraAllowedDirs = [], options = {}) => {
+      const caps = agentCapabilities.get('claude') || {};
       const args = [
         '-p',
         prompt,
         '--output-format',
         'stream-json',
         '--verbose',
-        '--include-partial-messages',
       ];
+      // `--include-partial-messages` lands richer streaming events but only
+      // exists in newer Claude Code builds. Older installs reject it with
+      // "unknown option" and exit 1, killing the chat. Gate on the probe.
+      if (caps.partialMessages) {
+        args.push('--include-partial-messages');
+      }
       if (options.model && options.model !== 'default') {
         args.push('--model', options.model);
       }
       const dirs = (extraAllowedDirs || []).filter(
         (d) => typeof d === 'string' && d.length > 0,
       );
-      if (dirs.length > 0) {
+      // `--add-dir` is older but still gate it for symmetry — old/forked
+      // builds may lack it.
+      if (dirs.length > 0 && caps.addDir !== false) {
         args.push('--add-dir', ...dirs);
       }
       args.push('--permission-mode', 'bypassPermissions');
@@ -352,6 +374,24 @@ async function probe(def) {
   } catch {
     // binary exists but --version failed; still mark available
   }
+  // Probe `--help` once per agent and record which flags the installed CLI
+  // advertises. Cached on `agentCapabilities` for buildArgs to consult.
+  if (def.helpArgs && def.capabilityFlags) {
+    const caps = {};
+    try {
+      const { stdout } = await execFileP(resolved, def.helpArgs, {
+        timeout: 5000,
+        maxBuffer: 4 * 1024 * 1024,
+      });
+      for (const [flag, key] of Object.entries(def.capabilityFlags)) {
+        caps[key] = stdout.includes(flag);
+      }
+    } catch {
+      // If --help fails, leave caps empty — buildArgs falls back to the safe
+      // baseline (no optional flags).
+    }
+    agentCapabilities.set(def.id, caps);
+  }
   const models = await fetchModels(def, resolved);
   return {
     ...stripFns(def),
@@ -366,8 +406,9 @@ function stripFns(def) {
   // Drop the buildArgs / listModels closures but keep declarative metadata
   // (reasoningOptions, streamFormat, name, bin, etc.). `models` is
   // populated separately by `fetchModels`, so we strip the static
-  // `fallbackModels` slot here too.
-  const { buildArgs, listModels, fallbackModels, ...rest } = def;
+  // `fallbackModels` slot here too. `helpArgs` / `capabilityFlags` are
+  // probe-only metadata and shouldn't bleed into the API response either.
+  const { buildArgs, listModels, fallbackModels, helpArgs, capabilityFlags, ...rest } = def;
   return rest;
 }
 
