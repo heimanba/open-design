@@ -296,6 +296,10 @@ export async function startServer({ port = 7456, returnServer = false } = {}) {
   app.use(express.json({ limit: '4mb' }));
   const db = openDatabase(PROJECT_ROOT, { dataDir: RUNTIME_DATA_DIR });
 
+  if (process.env.OD_CODEX_DISABLE_PLUGINS === '1') {
+    console.log('[od] Codex plugins disabled via OD_CODEX_DISABLE_PLUGINS=1');
+  }
+
   // Warm agent-capability probes (e.g. whether the installed Claude Code
   // build advertises --include-partial-messages) so the first /api/chat
   // hits a populated cache even if /api/agents hasn't been called yet.

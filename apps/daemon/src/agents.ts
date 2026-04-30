@@ -165,6 +165,9 @@ export const AGENT_DEFS = [
     // `spawn ENAMETOOLONG` while keeping Codex on its structured JSON stream.
     buildArgs: (_prompt, _imagePaths, _extra, options = {}, runtimeContext = {}) => {
       const args = ['exec', '--json', '--skip-git-repo-check', '--full-auto'];
+      if (process.env.OD_CODEX_DISABLE_PLUGINS === '1') {
+        args.push('--disable', 'plugins');
+      }
       if (runtimeContext.cwd) {
         args.push('-C', runtimeContext.cwd);
       }
