@@ -204,6 +204,15 @@ export interface Dict {
   'newproj.audioDurationSeconds': string;
   'newproj.voiceLabel': string;
   'newproj.voicePlaceholder': string;
+  'newproj.promptTemplateLabel': string;
+  'newproj.promptTemplateNoneTitle': string;
+  'newproj.promptTemplateNoneSub': string;
+  'newproj.promptTemplateRefSub': string;
+  'newproj.promptTemplateSearch': string;
+  'newproj.promptTemplateEmpty': string;
+  'newproj.promptTemplateBodyLabel': string;
+  'newproj.promptTemplateOptimizeHint': string;
+  'newproj.promptTemplateBodyEmpty': string;
 
   // Prompt templates
   'promptTemplates.searchPlaceholder': string;
@@ -222,6 +231,7 @@ export interface Dict {
   'promptTemplates.openSource': string;
   'promptTemplates.openFullscreen': string;
   'promptTemplates.closeFullscreen': string;
+  'promptTemplates.retry': string;
 
   // Designs tab
   'designs.subRecent': string;

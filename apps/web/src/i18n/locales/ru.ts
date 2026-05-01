@@ -117,8 +117,8 @@ export const ru: Dict = {
   'entry.openSettingsAria': 'Открыть настройки',
   'entry.resizeAria': 'Изменить размер боковой панели',
   'entry.loadingWorkspace': 'Загрузка рабочего пространства…',
-  'entry.tabImageTemplates': 'Промпты изображений',
-  'entry.tabVideoTemplates': 'Промпты видео',
+  'entry.tabImageTemplates': 'Шаблоны изображений',
+  'entry.tabVideoTemplates': 'Шаблоны видео',
   'promptTemplates.searchPlaceholder': 'Поиск шаблонов…',
   'promptTemplates.countLabel': '{n} результатов',
   'promptTemplates.emptyImage': 'Шаблоны промптов изображений не установлены.',
@@ -135,6 +135,7 @@ export const ru: Dict = {
   'promptTemplates.openSource': 'Открыть оригинал',
   'promptTemplates.openFullscreen': 'Открыть полноэкранный предпросмотр',
   'promptTemplates.closeFullscreen': 'Закрыть полноэкранный предпросмотр',
+  'promptTemplates.retry': 'Повторить',
 
   'newproj.tabPrototype': 'Прототип',
   'newproj.tabDeck': 'Презентация',
@@ -205,6 +206,17 @@ export const ru: Dict = {
   'newproj.audioDurationSeconds': '{n}с',
   'newproj.voiceLabel': 'Голос',
   'newproj.voicePlaceholder': 'Voice id провайдера, опционально',
+  'newproj.promptTemplateLabel': 'Эталонный шаблон',
+  'newproj.promptTemplateNoneTitle': 'Без шаблона — свой бриф',
+  'newproj.promptTemplateNoneSub': 'Пропустить галерею и описать самостоятельно',
+  'newproj.promptTemplateRefSub': 'Эталонный шаблон',
+  'newproj.promptTemplateSearch': 'Поиск шаблонов…',
+  'newproj.promptTemplateEmpty': 'Шаблоны для этого формата ещё не добавлены.',
+  'newproj.promptTemplateBodyLabel': 'Промпт (можно править)',
+  'newproj.promptTemplateOptimizeHint':
+    'Меняйте всё что нужно — правки попадут в бриф агента.',
+  'newproj.promptTemplateBodyEmpty':
+    'Пустое тело — агент не получит шаблонную референцию.',
 
   'designs.subRecent': 'Недавние',
   'designs.subYours': 'Ваши дизайны',
