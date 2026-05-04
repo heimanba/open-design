@@ -3965,6 +3965,11 @@ code {
   height: 100%;
   min-height: 0;
 }
+.comment-frame-clip {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
 .comment-overlay-layer {
   position: absolute;
   inset: 0;
