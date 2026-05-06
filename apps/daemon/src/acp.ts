@@ -323,12 +323,20 @@ export function attachAcpSession({
       // After response completion, any late-arriving errors from the agent
       // (pipe-broken, cleanup race conditions, etc.) are safe to ignore.
       if (finished) return;
-      // JSON-RPC -32603 "Internal error" handling:
-      // Unexpected-id -32603 errors are cleanup noise — suppress them.
-      // Expected-id -32603 errors for session/set_model fall through to the
-      // recovery block below. All other expected-id -32603 errors (initialize,
-      // session/new, session/prompt) are real failures — call fail().
+      // JSON-RPC error handling:
+      // -32603 "Internal error": unexpected-id errors are cleanup noise — suppress.
+      //   Expected-id errors for session/set_model fall through to the recovery
+      //   block. All others (initialize, session/new, session/prompt) are real
+      //   failures — call fail().
+      // -32602 "Invalid params": these are real validation failures. Only
+      //   suppress when they match setModelRequestId so the recovery block handles
+      //   them. Any other -32602 (unexpected-id or non-set_model expected-id) is
+      //   a genuine protocol error — call fail().
       if (raw.error?.code === -32603 && raw.id !== expectedId) {
+        return;
+      }
+      if (raw.error?.code === -32602 && raw.id !== setModelRequestId) {
+        fail(rpcErr);
         return;
       }
       if (raw.error?.code === -32603 && raw.id === expectedId) {
@@ -338,9 +346,9 @@ export function attachAcpSession({
           fail(rpcErr);
           return;
         }
-      } else {
-        fail(rpcErr);
-        return;
+      }
+      if (raw.error?.code === -32602 && raw.id === setModelRequestId) {
+        // Fall through — the recovery block will handle this
       }
     }
     if (raw.method === 'session/request_permission') {
@@ -377,12 +385,14 @@ export function attachAcpSession({
       }
       return;
     }
-    // Recovery: if session/set_model failed with -32603, fall back to
+    // Recovery: if session/set_model failed with -32603 or -32602, fall back to
     // sending the prompt with the default (already-active) model.
+    // -32603: agent doesn't support set_model at all (internal error).
+    // -32602: agent rejects the model ID or set_model params (invalid params).
     // This is scoped to the exact set_model request id to avoid
     // triggering on prompt or other request failures.
     if (
-      raw.error?.code === -32603 &&
+      (raw.error?.code === -32603 || raw.error?.code === -32602) &&
       raw.id === setModelRequestId &&
       promptRequestId === null
     ) {
