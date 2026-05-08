@@ -367,6 +367,7 @@ export const FR_SKILL_IDS_WITH_EN_FALLBACK = [
   'web-prototype-taste-soft',
   'waitlist-page',
   'x-research',
+  'trading-analysis-dashboard-template',
 ] as const;
 
 export const FR_DESIGN_SYSTEM_IDS_WITH_EN_FALLBACK = [

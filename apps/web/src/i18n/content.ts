@@ -416,6 +416,7 @@ const DE_SKILL_IDS_WITH_EN_FALLBACK = [
   'web-prototype-taste-soft',
   'waitlist-page',
   'x-research',
+  'trading-analysis-dashboard-template',
 ] as const;
 
 const DE_DESIGN_SYSTEM_IDS_WITH_EN_FALLBACK = [
